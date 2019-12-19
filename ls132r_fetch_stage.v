@@ -90,6 +90,7 @@ wire        nodcr            = cpu_status_i[15:15];
 wire        dint             = cpu_status_i[16:16];
 wire        lsnm             = cpu_status_i[17:17];
 wire [ 7:0] int_vec          = cpu_status_i[25:18];
+wire [19:0] ebase_bev0	     = cpu_status_i[45:26];
 
 wire        ex_valid         = exbus_i[ 0: 0];
 wire        ex_delay1        = exbus_i[ 1: 1];
@@ -327,21 +328,22 @@ assign pc_adder_b   = br_cancel ? br_offset : 32'h4;
 
 assign pc_adder_res = pc_adder_a + pc_adder_b;
 
-assign int_entry_bev0 = int_vec[7] ? `LS132R_INT7_ENTRY_BEV0 :
-                        int_vec[6] ? `LS132R_INT6_ENTRY_BEV0 :
-                        int_vec[5] ? `LS132R_INT5_ENTRY_BEV0 :
-                        int_vec[4] ? `LS132R_INT4_ENTRY_BEV0 :
-                        int_vec[3] ? `LS132R_INT3_ENTRY_BEV0 :
-                        int_vec[2] ? `LS132R_INT2_ENTRY_BEV0 :
-                        int_vec[1] ? `LS132R_INT1_ENTRY_BEV0 :
-                                     `LS132R_INT0_ENTRY_BEV0 ;
+/* FIXME: Warning: Violating MIPS standard */
+assign vint_entry_bev0 = int_vec[7] ? {ebase_bev0, `LS132R_INT7_ENTRY_BEV0} :
+                        int_vec[6] ? {ebase_bev0, `LS132R_INT6_ENTRY_BEV0} :
+                        int_vec[5] ? {ebase_bev0, `LS132R_INT5_ENTRY_BEV0} :
+                        int_vec[4] ? {ebase_bev0, `LS132R_INT4_ENTRY_BEV0} :
+                        int_vec[3] ? {ebase_bev0, `LS132R_INT3_ENTRY_BEV0} :
+                        int_vec[2] ? {ebase_bev0, `LS132R_INT2_ENTRY_BEV0} :
+                        int_vec[1] ? {ebase_bev0, `LS132R_INT1_ENTRY_BEV0} :
+                                     {ebase_bev0, `LS132R_INT0_ENTRY_BEV0} ;
 
 assign ex_ejtag = excode_delay1[5]; //refer to ls132r_define.v
 
 assign ex_entry = ex_nmi_delay1 ? 32'hbfc0_0000
                 : ex_ejtag   ? ((~nodcr & proben_i & probtrap_i) ? 32'hff20_0200 : 32'hbfc0_0480)
                 : status_bev ? 32'hbfc0_0380   
-                : ((excode_delay1==`LS132R_EX_INT && cause_iv) ? int_entry_bev0 : 32'h8000_0180);
+                : ((excode_delay1==`LS132R_EX_INT && cause_iv) ? vint_entry_bev0 : {ebase_bev0, 12'h180});
 
 assign pc_out   =                            ex_req ? ex_entry     :
                                           br_cancel ? pc_adder_res :

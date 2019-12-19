@@ -161,6 +161,7 @@ assign cpu_status_o[15:15] = nodcr      ;
 assign cpu_status_o[16:16] = dint       ;
 assign cpu_status_o[17:17] = lsnm       ;
 assign cpu_status_o[25:18] = int_vec    ;
+assign cpu_status_o[45:26] = ebase_bev0 ;
 
 
 wire        ex_valid ;
@@ -444,15 +445,22 @@ reg  [31:0] cr_epc;
 wire [31:0] epc_value;
 assign epc_value = cr_epc;
 
-// PID          reg: 15, sel: 0
+// PRID          reg: 15, sel: 0
 wire [ 7:0] cr_pid_Company_Options  = 8'h00;
-wire [ 7:0] cr_pid_Company_ID       = 8'h00;
-wire [ 7:0] cr_pid_Processor_ID     = 8'h42;
-wire [ 7:0] cr_pid_Revision         = 8'h10;
+wire [ 7:0] cr_pid_Company_ID       = 8'h14;
+wire [ 7:0] cr_pid_Processor_ID     = 8'h80;
+wire [ 7:0] cr_pid_Revision         = 8'h20;
 
 wire [31:0] pid_value;
 assign pid_value = {cr_pid_Company_Options, cr_pid_Company_ID, 
                     cr_pid_Processor_ID, cr_pid_Revision};
+
+// Ebase	reg: 15, sel: 1
+reg [19:0] ebase_bev0; /* High 20 bits */
+reg cr_ebase_wg;
+wire [9:0]cr_ebase_cpunum	= 10'b0000000000;
+
+assign ebase_value = {ebase_bev0 , cr_ebase_wg, 1'b0, cr_ebase_cpunum};
 
 // Config       reg: 16, sel: 0
 wire        cr_config_M     = 1'b1;
@@ -1534,7 +1542,8 @@ assign cp0_rd_value =
       | {32{cp0_raddr=={5'd12, 3'd0}}}&status_value     
       | {32{cp0_raddr=={5'd13, 3'd0}}}&cause_value      
       | {32{cp0_raddr=={5'd14, 3'd0}}}&epc_value        
-      | {32{cp0_raddr=={5'd15, 3'd0}}}&pid_value        
+      | {32{cp0_raddr=={5'd15, 3'd0}}}&pid_value      
+      | {32{cp0_raddr=={5'd15, 3'd1}}}&ebase_value  
       | {32{cp0_raddr=={5'd16, 3'd0}}}&config_value     
       | {32{cp0_raddr=={5'd16, 3'd1}}}&config1_value    
       | {32{cp0_raddr=={5'd30, 3'd0}}}&errorepc_value   
@@ -1705,6 +1714,22 @@ begin
     cr_epc          <= epc;
   else if (cp0_wen && cp0_waddr=={5'd14, 3'd0})
     cr_epc          <= cp0_wr_value[31:0];
+
+// Ebase        reg: 15, sel: 1
+  if (reset)
+  begin
+    ebase_bev0 <= 20'h80000;
+    cr_ebase_wg <= 1'b0; 
+  end
+  else if (cp0_wen && cp0_waddr=={5'd15, 3'd1})
+  begin
+    ebase_bev0[17:0] <= cp0_wr_value[29:12];
+    cr_ebase_wg <= cp0_wr_value[11];
+      if(cp0_wr_value[11])
+          ebase_bev0[19:18] <= cp0_wr_value[31:30];
+      else
+          ebase_bev0[19:18] <= 2'b10;
+  end
 
 // Config       reg: 16, sel: 0
 

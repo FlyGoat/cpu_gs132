@@ -43,7 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `define LS132R_IBKP_NUM     4'd1
 
 /****** Bus Width ******/
-`define Lcpustbus       26
+`define Lcpustbus       46
 `define Lirbus          68
 `define Lissuebus       260
 `define Lwbbus          109
@@ -103,14 +103,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /****** Vector Interrupt Entries ******/
-`define LS132R_INT0_ENTRY_BEV0  32'h8000_0200
-`define LS132R_INT1_ENTRY_BEV0  32'h8000_0220
-`define LS132R_INT2_ENTRY_BEV0  32'h8000_0240
-`define LS132R_INT3_ENTRY_BEV0  32'h8000_0260
-`define LS132R_INT4_ENTRY_BEV0  32'h8000_0280
-`define LS132R_INT5_ENTRY_BEV0  32'h8000_02a0
-`define LS132R_INT6_ENTRY_BEV0  32'h8000_02c0
-`define LS132R_INT7_ENTRY_BEV0  32'h8000_02e0
+`define LS132R_INT0_ENTRY_BEV0  12'h200
+`define LS132R_INT1_ENTRY_BEV0  12'h220
+`define LS132R_INT2_ENTRY_BEV0  12'h240
+`define LS132R_INT3_ENTRY_BEV0  12'h260
+`define LS132R_INT4_ENTRY_BEV0  12'h280
+`define LS132R_INT5_ENTRY_BEV0  12'h2a0
+`define LS132R_INT6_ENTRY_BEV0  12'h2c0
+`define LS132R_INT7_ENTRY_BEV0  12'h2e0
 
 /****** Internal Op & Fmt Code ******/
 /*Fix point operation*/
